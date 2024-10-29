@@ -1,13 +1,14 @@
 import pygame
-import math
-from queue import PriorityQueue
+from algorithms import astar, dijkstra, dfs, bfs, ucs  # Assume dijkstra is implemented in algorithms module
+
+pygame.init()
 
 #INITIALIZE WINDOW
 WIDTH = 800
-WIN = pygame.display.set_mode((WIDTH, WIDTH))
+WIN = pygame.display.set_mode((WIDTH + 200, WIDTH))  # Increase window width to make space for buttons
 pygame.display.set_caption('Pathfinding')
 
-#COLORS
+# COLORS
 RED = (255, 0, 0)
 GREEN = (0, 255, 0)
 BLUE = (0, 255, 0)
@@ -15,9 +16,12 @@ YELLOW = (255, 255, 0)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 PURPLE = (128, 0, 128)
-ORANGE = (255, 165 ,0)
+ORANGE = (255, 165, 0)
 GREY = (128, 128, 128)
 TURQUOISE = (64, 224, 208)
+BUTTON_COLOR = (70, 130, 180)
+BUTTON_HOVER_COLOR = (100, 149, 237)
+TEXT_COLOR = WHITE
 
 class Node:
     def __init__(self, row, col, width, total_rows):
@@ -96,64 +100,6 @@ class Node:
     def __lt__(self, other):
         return False
 
-def h(p1,p2):
-    x1, y1 = p1
-    x2, y2 = p2
-    return abs(x1 - x2) + abs(y1 - y2)
-
-def reconstruct_path(came_from, current, draw):
-    while current in came_from:
-        current = came_from[current]
-        current.make_path()
-        draw()
-
-def astar(draw, grid, start, end):
-    count = 0
-    open_set = PriorityQueue()
-    open_set.put((0, count, start))
-
-    came_from = {}
-
-    g_score = {node: float("inf") for row in grid for node in row}
-    g_score[start] = 0
-
-    f_score = {node: float("inf") for row in grid for node in row}
-    f_score[start] = h(start.get_pos(), end.get_pos())
-
-    open_set_hash = {start}
-
-    while not open_set.empty():
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-
-        current = open_set.get()[2]
-        open_set_hash.remove(current)
-
-        if current == end:
-            reconstruct_path(came_from, end, draw)
-            return True
-
-        for neighbour in current.neighbours:
-            temp_g_score = g_score[current] + 1
-
-            if temp_g_score < g_score[neighbour]:
-                came_from[neighbour] = current
-                g_score[neighbour] = temp_g_score
-                f_score[neighbour] = temp_g_score + h(neighbour.get_pos(), end.get_pos())
-                if neighbour not in open_set_hash:
-                    count += 1
-                    open_set.put((f_score[neighbour], count, neighbour))
-                    open_set_hash.add(neighbour)
-                    neighbour.make_open()
-
-        draw()
-
-        if current != start:
-            current.make_closed()
-
-    return False
-
 def make_grid(rows, width):
     grid = []
     gap = width // rows
@@ -168,7 +114,7 @@ def make_grid(rows, width):
 
 def draw_grid(win, rows, width):
     gap = width // rows
-    for i in range(rows):
+    for i in range(rows + 1):
         pygame.draw.line(win, GREY, (0, i * gap), (width, i * gap))
         pygame.draw.line(win, GREY, (i * gap, 0), (i * gap, width))
 
@@ -180,16 +126,50 @@ def draw(win, grid, rows, width):
             node.draw(win)
 
     draw_grid(win, rows, width)
+
+    # Draw buttons
+    draw_button(win, "A STAR", WIDTH + 25, 150, BUTTON_COLOR, BUTTON_HOVER_COLOR)
+    draw_button(win, "DIJKSTRA", WIDTH + 25, 210, BUTTON_COLOR, BUTTON_HOVER_COLOR)
+    draw_button(win, "DFS", WIDTH + 25, 270, BUTTON_COLOR, BUTTON_HOVER_COLOR)
+    draw_button(win, "BFS", WIDTH + 25, 330, BUTTON_COLOR, BUTTON_HOVER_COLOR)
+    draw_button(win, "UCS", WIDTH + 25, 390, BUTTON_COLOR, BUTTON_HOVER_COLOR)
+    draw_button(win, "CLEAR", WIDTH + 25, 450, BUTTON_COLOR, BUTTON_HOVER_COLOR)
+
     pygame.display.update()
+
+def draw_button(win, text, x, y, color, hover_color, width=150, height=50):
+    mouse = pygame.mouse.get_pos()
+    click = pygame.mouse.get_pressed()
+
+    # Check if mouse is hovering over the button
+    if x < mouse[0] < x + width and y < mouse[1] < y + height:
+        pygame.draw.rect(win, hover_color, (x, y, width, height))
+    else:
+        pygame.draw.rect(win, color, (x, y, width, height))
+
+    # Draw text on the button
+    font = pygame.font.SysFont(None, 36)
+    text_surf = font.render(text, True, TEXT_COLOR)
+    text_rect = text_surf.get_rect(center=(x + width // 2, y + height // 2))
+    win.blit(text_surf, text_rect)
+
+
+def button_clicked(x, y, button_x, button_y, button_width=100, button_height=50):
+    return button_x < x < button_x + button_width and button_y < y < button_y + button_height
+
 
 def get_clicked_pos(pos, rows, width):
     gap = width // rows
     y, x = pos
 
-    row = y//gap
-    col = x//gap
+    row = y // gap
+    col = x // gap
 
-    return row, col
+    # Check if the click is within the bounds of the grid
+    if 0 <= row < rows and 0 <= col < rows:
+        return row, col
+    else:
+        return None, None  # Return None if clicked outside the grid
 
 def main(win, width):
     ROWS = 50
@@ -210,45 +190,82 @@ def main(win, width):
             if started:
                 continue
 
-            if pygame.mouse.get_pressed()[0]: #LMB
+            if pygame.mouse.get_pressed()[0]:  # Left Mouse Button
                 pos = pygame.mouse.get_pos()
-                row, col = get_clicked_pos(pos, ROWS, width)
-                node = grid[row][col]
+                if button_clicked(pos[0], pos[1], WIDTH + 25, 150):  # A STAR button
+                    started = True
+                    for row in grid:
+                        for node in row:
+                            node.update_neighbours(grid)
+                    astar(lambda: draw(win, grid, ROWS, width), grid, start, end)
+                    started = False
 
-                if not start and node != end:
-                    start = node
-                    start.make_start()
+                elif button_clicked(pos[0], pos[1], WIDTH + 25, 210):  # DIJKSTRA button
+                    started = True
+                    for row in grid:
+                        for node in row:
+                            node.update_neighbours(grid)
+                    dijkstra(lambda: draw(win, grid, ROWS, width), grid, start, end)
+                    started = False
 
-                elif not end and node != start:
-                    end = node
-                    end.make_end()
+                elif button_clicked(pos[0], pos[1], WIDTH + 25, 270):  # DFS button
+                    started = True
+                    for row in grid:
+                        for node in row:
+                            node.update_neighbours(grid)
+                    dfs(lambda: draw(win, grid, ROWS, width), grid, start, end)
+                    started = False
 
-                elif node != end and node != start:
-                    node.make_barrier()
+                elif button_clicked(pos[0], pos[1], WIDTH + 25, 330):  # BFS button
+                    started = True
+                    for row in grid:
+                        for node in row:
+                            node.update_neighbours(grid)
+                    bfs(lambda: draw(win, grid, ROWS, width), grid, start, end)
+                    started = False
 
-            elif pygame.mouse.get_pressed()[2]: #RMB
+                elif button_clicked(pos[0], pos[1], WIDTH + 25, 390):  # UCS button
+                    started = True
+                    for row in grid:
+                        for node in row:
+                            node.update_neighbours(grid)
+                    ucs(lambda: draw(win, grid, ROWS, width), grid, start, end)
+                    started = False
+
+                elif button_clicked(pos[0], pos[1], WIDTH + 25, 450):  # CLEAR button
+                    start = None
+                    end = None
+                    grid = make_grid(ROWS, width)
+
+                else:  # Grid interactions
+                    row, col = get_clicked_pos(pos, ROWS, width)
+                    if row is not None and col is not None:  # Check if within grid bounds
+                        node = grid[row][col]
+                        if not start and node != end:
+                            start = node
+                            start.make_start()
+                        elif not end and node != start:
+                            end = node
+                            end.make_end()
+                        elif node != end and node != start:
+                            node.make_barrier()
+
+            elif pygame.mouse.get_pressed()[2]:  # Right Mouse Button
                 pos = pygame.mouse.get_pos()
                 row, col = get_clicked_pos(pos, ROWS, width)
                 node = grid[row][col]
                 node.reset()
                 if node == start:
                     start = None
-
-                if node == end:
+                elif node == end:
                     end = None
 
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE and not started:
-                    for row in grid:
-                        for node in row:
-                            node.update_neighbours(grid)
-
-                    astar(lambda: draw(win, grid, ROWS, width), grid, start, end)
-
                 if event.key == pygame.K_c:
                     start = None
                     end = None
                     grid = make_grid(ROWS, width)
+
     pygame.quit()
 
 main(WIN, WIDTH)
