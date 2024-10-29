@@ -1,5 +1,6 @@
 import pygame
-from algorithms import astar, dijkstra, dfs, bfs, ucs  # Assume dijkstra is implemented in algorithms module
+import time
+from algorithms import astar, dijkstra, dfs, bfs, ucs
 
 pygame.init()
 
@@ -9,19 +10,19 @@ WIN = pygame.display.set_mode((WIDTH + 200, WIDTH))  # Increase window width to 
 pygame.display.set_caption('Pathfinding')
 
 # COLORS
-RED = (255, 0, 0)
-GREEN = (0, 255, 0)
+RED = (85, 127, 170)
+GREEN = (0, 198, 255)
 BLUE = (0, 255, 0)
 YELLOW = (255, 255, 0)
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-PURPLE = (128, 0, 128)
+WHITE = (50, 50, 50)
+BLACK = (200, 200, 200)
+PURPLE = (0, 0, 128)
 ORANGE = (255, 165, 0)
-GREY = (128, 128, 128)
-TURQUOISE = (64, 224, 208)
+GREY = (75, 75, 75)
+TURQUOISE = (255, 0, 0)
 BUTTON_COLOR = (70, 130, 180)
 BUTTON_HOVER_COLOR = (100, 149, 237)
-TEXT_COLOR = WHITE
+TEXT_COLOR = (255, 255, 255)
 
 class Node:
     def __init__(self, row, col, width, total_rows):
@@ -112,6 +113,8 @@ def make_grid(rows, width):
 
     return grid
 
+
+
 def draw_grid(win, rows, width):
     gap = width // rows
     for i in range(rows + 1):
@@ -197,7 +200,13 @@ def main(win, width):
                     for row in grid:
                         for node in row:
                             node.update_neighbours(grid)
+
+                    start_time = time.time()
                     astar(lambda: draw(win, grid, ROWS, width), grid, start, end)
+                    end_time = time.time()
+
+                    print(f"A* Algorithm Time: {end_time - start_time:.4f} seconds")
+
                     started = False
 
                 elif button_clicked(pos[0], pos[1], WIDTH + 25, 210):  # DIJKSTRA button
@@ -205,7 +214,13 @@ def main(win, width):
                     for row in grid:
                         for node in row:
                             node.update_neighbours(grid)
+
+                    start_time = time.time()
                     dijkstra(lambda: draw(win, grid, ROWS, width), grid, start, end)
+                    end_time = time.time()
+
+                    print(f"Dijkstra Time: {end_time - start_time:.4f} seconds")
+
                     started = False
 
                 elif button_clicked(pos[0], pos[1], WIDTH + 25, 270):  # DFS button
@@ -213,7 +228,13 @@ def main(win, width):
                     for row in grid:
                         for node in row:
                             node.update_neighbours(grid)
+
+                    start_time = time.time()
                     dfs(lambda: draw(win, grid, ROWS, width), grid, start, end)
+                    end_time = time.time()
+
+                    print(f"DFS Time: {end_time - start_time:.4f} seconds")
+
                     started = False
 
                 elif button_clicked(pos[0], pos[1], WIDTH + 25, 330):  # BFS button
@@ -221,7 +242,13 @@ def main(win, width):
                     for row in grid:
                         for node in row:
                             node.update_neighbours(grid)
+
+                    start_time = time.time()
                     bfs(lambda: draw(win, grid, ROWS, width), grid, start, end)
+                    end_time = time.time()
+
+                    print(f"BFS Time: {end_time - start_time:.4f} seconds")
+
                     started = False
 
                 elif button_clicked(pos[0], pos[1], WIDTH + 25, 390):  # UCS button
@@ -229,7 +256,12 @@ def main(win, width):
                     for row in grid:
                         for node in row:
                             node.update_neighbours(grid)
+                    start_time = time.time()
                     ucs(lambda: draw(win, grid, ROWS, width), grid, start, end)
+                    end_time = time.time()
+
+                    print(f"UCS Time: {end_time - start_time:.4f} seconds")
+
                     started = False
 
                 elif button_clicked(pos[0], pos[1], WIDTH + 25, 450):  # CLEAR button
