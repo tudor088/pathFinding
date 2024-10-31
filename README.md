@@ -1,8 +1,9 @@
 # Pathfinding Algorithm Visualizer
 
-An interactive Python application that visualizes various pathfinding algorithms using Pygame. This tool helps users understand how different pathfinding algorithms work by providing a real-time visual representation of their search patterns and final paths.
+An interactive Python application that visualizes various pathfinding algorithms and a maze generation algorithm using Pygame. This tool helps users understand how different pathfinding algorithms work by providing a real-time visual representation of their search patterns and final paths.
 
 ![Algorithm Example](assets/gifalgo.gif)
+![Maze Example](assets/maze.gif)
 
 ## Features
 
@@ -12,6 +13,7 @@ An interactive Python application that visualizes various pathfinding algorithms
   - Depth-First Search (DFS)
   - Breadth-First Search (BFS)
   - Uniform Cost Search (UCS)
+  - **Maze Generation**: Generate random mazes using a Depth-First Search (DFS) based algorithm.
 
 - **Interactive Grid:**
   - Left-click to place:
@@ -20,6 +22,7 @@ An interactive Python application that visualizes various pathfinding algorithms
     - Barriers (subsequent clicks)
   - Right-click to erase nodes
   - Clear button to reset the grid
+  - **Maze Generation Button**: Create a random maze layout to test pathfinding algorithms.
 
 - **Real-time Visualization:**
   - Color-coded states:
@@ -53,6 +56,7 @@ An interactive Python application that visualizes various pathfinding algorithms
   
 - **Button Interface:**
   - Algorithm selection buttons
+  - Maze generation button to create a random maze
   - Clear button for grid reset
 
 ## Requirements
