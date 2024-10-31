@@ -1,6 +1,6 @@
 import pygame
 import time
-from algorithms import astar, dijkstra, dfs, bfs, ucs
+from algorithms import astar, dijkstra, dfs, bfs, ucs, generate_maze
 
 pygame.init()
 
@@ -21,7 +21,11 @@ ORANGE = (255, 165, 0)
 GREY = (75, 75, 75)
 TURQUOISE = (255, 0, 0)
 BUTTON_COLOR = (70, 130, 180)
+BUTTON_COLOR_MAZE = (70, 180, 77)
+BUTTON_COLOR_CLEAR = (180, 70, 72)
 BUTTON_HOVER_COLOR = (100, 149, 237)
+BUTTON_HOVER_COLOR_MAZE = (81, 207, 89)
+BUTTON_HOVER_COLOR_CLEAR = (232, 91, 93)
 TEXT_COLOR = (255, 255, 255)
 
 class Node:
@@ -98,6 +102,21 @@ class Node:
         if self.col > 0 and not grid[self.row][self.col - 1].is_barrier(): #left A ROW
             self.neighbours.append(grid[self.row][self.col - 1])
 
+    def update_neighbours_maze(self, grid):
+        self.neighbours = []
+
+        if self.row > 1:
+            self.neighbours.append(grid[self.row - 2][self.col])
+
+        if self.row < self.total_rows - 2:
+            self.neighbours.append(grid[self.row + 2][self.col])
+
+        if self.col > 1:
+            self.neighbours.append(grid[self.row][self.col - 2])
+
+        if self.col < self.total_rows - 2:
+            self.neighbours.append(grid[self.row][self.col + 2])
+
     def __lt__(self, other):
         return False
 
@@ -121,6 +140,19 @@ def draw_grid(win, rows, width):
         pygame.draw.line(win, GREY, (0, i * gap), (width, i * gap))
         pygame.draw.line(win, GREY, (i * gap, 0), (i * gap, width))
 
+def draw_maze(win, grid, rows, width):
+    win.fill(WHITE)
+
+    for row in grid:
+        for node in row:
+            if node.row == 0 or node.col == 0 or node.row == node.total_rows-1 or node.col == node.total_rows-1:
+                node.make_barrier()
+            node.draw(win)
+
+    draw_grid(win, rows, width)
+
+    pygame.display.update()
+
 def draw(win, grid, rows, width):
     win.fill(WHITE)
 
@@ -136,7 +168,8 @@ def draw(win, grid, rows, width):
     draw_button(win, "DFS", WIDTH + 25, 270, BUTTON_COLOR, BUTTON_HOVER_COLOR)
     draw_button(win, "BFS", WIDTH + 25, 330, BUTTON_COLOR, BUTTON_HOVER_COLOR)
     draw_button(win, "UCS", WIDTH + 25, 390, BUTTON_COLOR, BUTTON_HOVER_COLOR)
-    draw_button(win, "CLEAR", WIDTH + 25, 450, BUTTON_COLOR, BUTTON_HOVER_COLOR)
+    draw_button(win, "MAZE", WIDTH + 25, 450, BUTTON_COLOR_MAZE, BUTTON_HOVER_COLOR_MAZE)
+    draw_button(win, "CLEAR", WIDTH + 25, 510, BUTTON_COLOR_CLEAR, BUTTON_HOVER_COLOR_CLEAR)
 
     pygame.display.update()
 
@@ -264,7 +297,11 @@ def main(win, width):
 
                     started = False
 
-                elif button_clicked(pos[0], pos[1], WIDTH + 25, 450):  # CLEAR button
+                elif button_clicked(pos[0], pos[1], WIDTH + 25, 450):  # MAZE button
+                    generate_maze(lambda: draw(win, grid, ROWS, width), grid)
+
+
+                elif button_clicked(pos[0], pos[1], WIDTH + 25, 510):  # CLEAR button
                     start = None
                     end = None
                     grid = make_grid(ROWS, width)

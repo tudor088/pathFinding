@@ -1,6 +1,7 @@
 import pygame
 from queue import PriorityQueue
 from collections import deque
+import random
 def h(p1,p2):
     x1, y1 = p1
     x2, y2 = p2
@@ -154,7 +155,82 @@ def bfs(draw, grid, start, end):
 
     return False
 
+# def generate_maze(draw, grid):
+#     for row in grid:
+#         for node in row:
+#             node.make_barrier()  # Start with all nodes as walls
+#
+#     # Start maze generation from a random node
+#     start_row = random.randint(0, len(grid) - 1)
+#     start_col = random.randint(0, len(grid[0]) - 1)
+#     start_node = grid[start_row][start_col]
+#     start_node.reset()
+#     stack = [start_node]
+#
+#     while stack:
+#         current = stack.pop()
+#         current.update_neighbours_maze(grid)
+#
+#         unvisited_neighbours = []
+#
+#         for n in current.neighbours:
+#             if n.is_barrier():
+#                 unvisited_neighbours.append(n)
+#
+#         if unvisited_neighbours:
+#             stack.append(current)
+#
+#             next_node = random.choice(unvisited_neighbours)
+#
+#             between_x = (current.row + next_node.row) // 2
+#             between_y = (current.col + next_node.col) // 2
+#             grid[between_x][between_y].reset()
+#
+#             next_node.reset()
+#
+#             stack.append(next_node)
+#
+#             draw()
+#
+#     pygame.display.update()  # Final display update after maze generation is complete
+def generate_maze(draw, grid):
+    for row in grid:
+        for node in row:
+            node.make_barrier()  # Start with all nodes as walls
 
+    # Start maze generation from a random node
+    random_node_x = random.randint(0, len(grid)-1)
+    random_node_y = random.randint(0, len(grid[0]) - 1)
+    random_node = grid[random_node_x][random_node_y]
+    random_node.reset()
+
+    stack = [random_node]
+
+    while stack:
+        current = stack.pop()
+        current.update_neighbours_maze(grid)
+
+        unvisited_neighbours = []
+
+        for n in current.neighbours:
+            if n.is_barrier():
+                unvisited_neighbours.append(n)
+
+        if unvisited_neighbours:
+            stack.append(current)
+
+            next_neighbour = random.choice(unvisited_neighbours)
+
+            path_x = (current.row + next_neighbour.row)//2
+            path_y = (current.col + next_neighbour.col)//2
+            grid[path_x][path_y].reset()
+
+            next_neighbour.reset()
+
+            stack.append(next_neighbour)
+            draw()
+
+    pygame.display.update()  # Final display update after maze generation is complete
 
 def dfs(draw, grid, start, end):
     stack = [start]  # Initialize the stack with the start node
@@ -184,9 +260,6 @@ def dfs(draw, grid, start, end):
             current.make_closed()
 
     return False
-
-
-
 
 def ucs(draw, grid, start, end):
     # Priority queue to store the nodes to be explored, initialized with the start node
