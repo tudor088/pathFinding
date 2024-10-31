@@ -3,7 +3,6 @@
 An interactive Python application that visualizes various pathfinding algorithms and a maze generation algorithm using Pygame. This tool helps users understand how different pathfinding algorithms work by providing a real-time visual representation of their search patterns and final paths.
 
 ![Algorithm Example](assets/gifalgo.gif)
-![Maze Example](assets/maze.gif)
 
 ## Features
 
@@ -38,6 +37,8 @@ An interactive Python application that visualizes various pathfinding algorithms
   - Execution time measurement for each algorithm
   - Path length calculation
   - Node position tracking
+
+ ![Maze](assets/maze.gif)
 
 ## Technical Details
 
